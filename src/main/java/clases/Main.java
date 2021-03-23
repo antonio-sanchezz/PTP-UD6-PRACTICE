@@ -3,7 +3,20 @@
  */
 package clases;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     
@@ -16,6 +29,23 @@ public class Main {
      * @param datos formato "nick>dd/MM/yyyy>3.2
      */
     public static void alta (List<UserProfile> lista, String datos) {
+    	
+    	UserProfile user = procesaEntrada(datos);
+    	
+		lista.add(user);
+
+    }
+    
+    static UserProfile procesaEntrada(String entrada) {
+    	UserProfile user = null;
+    	String[] datosU = entrada.split(">");
+
+		String nick = datosU[0];
+		LocalDate regDate = LocalDate.parse(datosU[1], DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+		Float rating = Float.parseFloat(datosU[2]);
+
+		user = new UserProfile(nick, regDate, rating);
+		return user;
     }
     
     /**
@@ -25,7 +55,14 @@ public class Main {
      * @return true si se elimino, false en caso contrario
      */
     public static boolean baja (List<UserProfile> lista, UserProfile elemento) {
-    	return false;
+    	
+    	boolean validador = false;
+    	
+    	if (lista.remove(elemento)) {
+    		validador = true;
+    	}
+    	
+    	return validador;
     }
     
     /**
@@ -37,6 +74,29 @@ public class Main {
      * @param lista
      */
     public static void salvarDatos(List<UserProfile> lista) {
+		Scanner teclado = new Scanner(System.in);
+		String opcion = teclado.nextLine();
+
+		try {
+			File file = new File(opcion);
+			FileOutputStream fileout = new FileOutputStream(file);
+			BufferedWriter BWriter = new BufferedWriter(new OutputStreamWriter(fileout));
+
+			Iterator<UserProfile> itUsers = lista.iterator();
+			while (itUsers.hasNext()) {
+				UserProfile user = itUsers.next();
+
+				// nick>dd/MM/yyyy>3.2
+				BWriter.write(user.toString());
+				BWriter.newLine();
+			}
+
+			BWriter.close();
+			System.out.println("El archivo ha sido modificado correctamente.");
+		} catch (IOException e) {
+			System.out.println("Ha ocurrido un error.");
+			e.printStackTrace();
+		}
     }
     
     /**
@@ -49,6 +109,39 @@ public class Main {
      * @param lista
      */
     public static void cargarDatos(List<UserProfile> lista) {
+		Scanner teclado = new Scanner(System.in);
+		System.out.println("¿Que archivo desea cargar?");
+		String opcion = teclado.nextLine();
+
+	    File file = new File(opcion);
+	    if (file.exists()) {
+	    	FileReader frfile = null;
+			try {
+				frfile = new FileReader (opcion);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	BufferedReader brfile = new BufferedReader(frfile);
+
+	         // Lectura del fichero
+	         String linea;
+	         try {
+				while((linea = brfile.readLine()) != null) {
+					// Procesar la entrada.
+					UserProfile user = procesaEntrada(linea);
+					// Crear el usuario con los datos de la entrada.
+					lista.add(user);
+				 }
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+	    	// Cargamos los libros del fichero.
+	    	
+	    } else {
+	      System.out.println("El archivo indicado no existe.");
+	    }
     }
     
     /**
@@ -57,6 +150,11 @@ public class Main {
      * @param lista
      */
     public static void ordena(List<UserProfile> lista) {
+		Collections.sort(lista);
+
+		for (UserProfile libro : lista) {
+			System.out.println(libro.toString());
+		}
     }
     
     /**
@@ -65,6 +163,11 @@ public class Main {
      * @param lista
      */
     public static void ordenaRating(List<UserProfile> lista) {
+		Collections.sort(lista, new UserProfile());
+
+		for (UserProfile libro : lista) {
+			System.out.println(libro.toString());
+		}
     }
     
     
